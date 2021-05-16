@@ -36,8 +36,8 @@ Future<Position> fetchPos() async {
 Future<Collection> fetchCollection() async {
   Position pos = await fetchPos();
   try {
-    final response = await http.get(
-        'https://api.openweathermap.org/data/2.5/weather?lat=${pos.latitude}&lon=${pos.longitude}&appid=779e4b58ea0317e919553d94aae43020');
+    final response = await http.get(Uri.parse(
+        'https://api.openweathermap.org/data/2.5/weather?lat=${pos.latitude}&lon=${pos.longitude}&appid=779e4b58ea0317e919553d94aae43020'));
 
     if (response.statusCode == 200) {
       // If the server did return a 200 OK response,
@@ -63,8 +63,6 @@ Future<Collection> fetchCollection() async {
   }
 }
 
-
-
 class Data extends StatefulWidget {
   final input;
   final double fontSize;
@@ -75,7 +73,7 @@ class Data extends StatefulWidget {
 }
 
 class _DataState extends State<Data> {
-  Future<Collection> futureAlbum;
+  Future<Collection> futureCollection;
   String _input;
   double _fontSize;
   String _text;
@@ -84,7 +82,7 @@ class _DataState extends State<Data> {
   @override
   void initState() {
     super.initState();
-    futureAlbum = fetchCollection();
+    futureCollection = fetchCollection();
     _input = widget.input;
     _fontSize = widget.fontSize;
   }
@@ -93,7 +91,7 @@ class _DataState extends State<Data> {
   Widget build(BuildContext context) {
     return Container(
       child: FutureBuilder<Collection>(
-        future: futureAlbum,
+        future: futureCollection,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             if (_input == "country") {
