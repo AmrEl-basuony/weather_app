@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
+import 'package:weatherapp/models/collection.dart';
 
 Future<Position> fetchPos() async {
   bool serviceEnabled;
@@ -32,7 +33,7 @@ Future<Position> fetchPos() async {
       desiredAccuracy: LocationAccuracy.low);
 }
 
-Future<Album> fetchAlbum() async {
+Future<Collection> fetchCollection() async {
   Position pos = await fetchPos();
   try {
     final response = await http.get(
@@ -41,10 +42,10 @@ Future<Album> fetchAlbum() async {
     if (response.statusCode == 200) {
       // If the server did return a 200 OK response,
       // then parse the JSON.
-      return Album.fromJson(jsonDecode(response.body));
+      return Collection.fromJson(jsonDecode(response.body));
     }
   } catch (e) {
-    return Album.fromJson({
+    return Collection.fromJson({
       "weather": [
         {
           "description": " ",
@@ -62,105 +63,11 @@ Future<Album> fetchAlbum() async {
   }
 }
 
-class Album {
-  List<Weather> weather;
-  Main main;
-  Wind wind;
-  String name;
 
-  Album({this.weather, this.main, this.wind, this.name});
-
-  Album.fromJson(Map<String, dynamic> json) {
-    if (json['weather'] != null) {
-      weather = new List<Weather>();
-      json['weather'].forEach((v) {
-        weather.add(new Weather.fromJson(v));
-      });
-    }
-    main = json['main'] != null ? new Main.fromJson(json['main']) : null;
-    wind = json['wind'] != null ? new Wind.fromJson(json['wind']) : null;
-    name = json['name'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.weather != null) {
-      data['weather'] = this.weather.map((v) => v.toJson()).toList();
-    }
-    if (this.main != null) {
-      data['main'] = this.main.toJson();
-    }
-    if (this.wind != null) {
-      data['wind'] = this.wind.toJson();
-    }
-    data['name'] = this.name;
-    return data;
-  }
-}
-
-class Weather {
-  String main;
-  String description;
-
-  Weather({this.main, this.description});
-
-  Weather.fromJson(Map<String, dynamic> json) {
-    main = json['main'];
-    description = json['description'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['main'] = this.main;
-    data['description'] = this.description;
-    return data;
-  }
-}
-
-class Main {
-  double temp;
-  double tempMin;
-  double tempMax;
-  int humidity;
-
-  Main({this.temp, this.tempMin, this.tempMax, this.humidity});
-
-  Main.fromJson(Map<String, dynamic> json) {
-    temp = json['temp'];
-    tempMin = json['temp_min'];
-    tempMax = json['temp_max'];
-    humidity = json['humidity'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['temp'] = this.temp;
-    data['temp_min'] = this.tempMin;
-    data['temp_max'] = this.tempMax;
-    data['humidity'] = this.humidity;
-    return data;
-  }
-}
-
-class Wind {
-  var speed;
-
-  Wind({this.speed});
-
-  Wind.fromJson(Map<String, dynamic> json) {
-    speed = json['speed'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['speed'] = this.speed;
-    return data;
-  }
-}
 
 class Data extends StatefulWidget {
   final input;
-  double fontSize;
+  final double fontSize;
   Data(this.input, this.fontSize);
 
   @override
@@ -168,7 +75,7 @@ class Data extends StatefulWidget {
 }
 
 class _DataState extends State<Data> {
-  Future<Album> futureAlbum;
+  Future<Collection> futureAlbum;
   String _input;
   double _fontSize;
   String _text;
@@ -177,7 +84,7 @@ class _DataState extends State<Data> {
   @override
   void initState() {
     super.initState();
-    futureAlbum = fetchAlbum();
+    futureAlbum = fetchCollection();
     _input = widget.input;
     _fontSize = widget.fontSize;
   }
@@ -185,7 +92,7 @@ class _DataState extends State<Data> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: FutureBuilder<Album>(
+      child: FutureBuilder<Collection>(
         future: futureAlbum,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
